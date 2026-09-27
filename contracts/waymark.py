@@ -27,10 +27,10 @@ class Capability:
     description: str
     version: str
     active: bool
-    tags: List[str] = None
+    tags: str = ""
     policy: str = ""
     owner: str = ""
-    revision: int = 1
+    revision: u32 = u32(1)
 
 
 @allow_storage
@@ -39,19 +39,19 @@ class Manifest:
     key: str
     version: str
     description: str
-    tags: List[str]
+    tags: str
     policy: str
     definition_hash: str
     owner: str
     active: bool
-    revision: int
+    revision: u32
 
 
 @allow_storage
 @dataclass
 class RouteAttempt:
     request_id: str
-    attempt: int
+    attempt: u32
     request_hash: str
     catalog_hash: str
     selected_key: str
@@ -67,7 +67,7 @@ class RouteReceipt:
     capability_key: str
     capability_version: str
     definition_hash: str
-    attempt: int
+    attempt: u32
     status: str
     created_by: str
 
@@ -75,8 +75,8 @@ class RouteReceipt:
 @allow_storage
 @dataclass
 class CapabilityStats:
-    routed: int
-    rejected: int
+    routed: u32
+    rejected: u32
     last_request_hash: str
     active: bool
 
@@ -97,7 +97,7 @@ class Route:
     capability_key: str
     definition_hash: str
     status: str
-    attempt: int
+    attempt: u32
     created_by: str
     reason: str
 
@@ -116,13 +116,8 @@ class Waymark(gl.Contract):
     policy_count: u256
 
     def __init__(self):
-        self.capabilities = {}
-        self.manifests = {}
-        self.policies = {}
-        self.routes = {}
-        self.attempts = {}
-        self.stats = {}
-        self.history = []
+        self.route_count = u256(0)
+        self.policy_count = u256(0)
         self.route_count = 0
         self.policy_count = 0
 
@@ -138,34 +133,30 @@ class Waymark(gl.Contract):
             raise ValueError("invalid key")
 
     @staticmethod
-    def _check_tags(tags: List[str]) -> None:
-        if not isinstance(tags, list) or len(tags) > MAX_TAGS:
+    def _check_tags(tags: str) -> None:
+        if not isinstance(tags, str) or len(tags) > MAX_TAGS * MAX_TAG_LENGTH:
             raise ValueError("tag bound")
-        seen = set()
-        for tag in tags:
-            if not isinstance(tag, str) or not tag or len(tag) > MAX_TAG_LENGTH:
+        for tag in tags.split(",") if tags else []:
+            if not tag or len(tag) > MAX_TAG_LENGTH:
                 raise ValueError("invalid tag")
-            if tag in seen:
-                raise ValueError("duplicate tag")
-            seen.add(tag)
 
     @staticmethod
     def _hash(value: str) -> str:
         return hashlib.sha256(value.encode()).hexdigest()
 
     @staticmethod
-    def _canonical_tags(tags: List[str]) -> List[str]:
-        return sorted(set(tags))
+    def _canonical_tags(tags: str) -> str:
+        return ",".join(sorted(set(tags.split(",")))) if tags else ""
 
     @staticmethod
     def _manifest_hash(key: str, description: str, version: str,
-                       tags: List[str], policy: str, owner: str,
+                       tags: str, policy: str, owner: str,
                        revision: int) -> str:
         payload = {
             "key": key,
             "description": description,
             "version": version,
-            "tags": sorted(tags),
+            "tags": tags,
             "policy": policy,
             "owner": owner,
             "revision": revision,
@@ -255,7 +246,7 @@ class Waymark(gl.Contract):
             raise ValueError("capability exists")
         if len(self.capabilities) >= MAX_CAPABILITIES:
             raise ValueError("capability limit")
-        tags = []
+        tags = ""
         policy = ""
         owner = ""
         revision = 1
@@ -287,7 +278,7 @@ class Waymark(gl.Contract):
         self._set_stats(key, stats.routed, stats.rejected, stats.last_request_hash, False)
 
     @gl.public.write
-    def configure(self, key: str, tags: List[str], policy: str, owner: str) -> None:
+    def configure(self, key: str, tags: str, policy: str, owner: str) -> None:
         """Create a new immutable manifest revision for a capability."""
         item = self._get_capability(key)
         self._check_tags(tags)
@@ -353,7 +344,7 @@ class Waymark(gl.Contract):
         def decide() -> str:
             catalog = "\n".join(
                 "KEY=" + c.key + "\nDESCRIPTION=" + c.description
-                + "\nVERSION=" + c.version + "\nTAGS=" + ",".join(c.tags)
+                + "\nVERSION=" + c.version + "\nTAGS=" + c.tags
                 + "\nPOLICY=" + c.policy
                 for c in candidates
             )
@@ -590,12 +581,12 @@ class Waymark(gl.Contract):
     def _copy_capability(self, item: Capability) -> Capability:
         return Capability(
             item.key, item.description, item.version, item.active,
-            list(item.tags), item.policy, item.owner, item.revision,
+            item.tags, item.policy, item.owner, item.revision,
         )
 
     def _copy_manifest(self, item: Manifest) -> Manifest:
         return Manifest(
-            item.key, item.version, item.description, list(item.tags),
+            item.key, item.version, item.description, item.tags,
             item.policy, item.definition_hash, item.owner,
             item.active, item.revision,
         )
@@ -609,7 +600,7 @@ class Waymark(gl.Contract):
             "key": manifest.key,
             "version": manifest.version,
             "description": manifest.description,
-            "tags": sorted(manifest.tags),
+            "tags": manifest.tags,
             "policy": manifest.policy,
             "owner": manifest.owner,
             "revision": manifest.revision,
