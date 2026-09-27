@@ -357,7 +357,7 @@ class Waymark(gl.Contract):
             )
             return gl.exec_prompt(prompt).strip()
 
-        selected = gl.eq_principle_strict_eq(decide)
+        selected = gl.eq_principle.strict_eq(decide)
         valid = {c.key for c in candidates}
         if selected not in valid:
             self._append_attempt(RouteAttempt(
