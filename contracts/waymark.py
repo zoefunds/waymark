@@ -340,6 +340,7 @@ class Waymark(gl.Contract):
         definition_hash = self._catalog_hash(candidates)
         request_hash = self._request_hash(request_id, request)
         attempt_number = len(self.attempts.get(request_id, [])) + 1
+        valid = {c.key for c in candidates}
 
         def decide() -> str:
             catalog = "\n".join(
@@ -357,8 +358,16 @@ class Waymark(gl.Contract):
             )
             return gl.nondet.exec_prompt(prompt).strip()
 
-        selected = gl.eq_principle.strict_eq(decide)
-        valid = {c.key for c in candidates}
+        def validate(leader_result) -> bool:
+            if not isinstance(leader_result, gl.vm.Return):
+                return False
+            candidate = leader_result.calldata
+            if not isinstance(candidate, str) or candidate not in valid:
+                return False
+            validator_choice = decide()
+            return isinstance(validator_choice, str) and validator_choice in valid and validator_choice == candidate
+
+        selected = gl.vm.run_nondet_unsafe(decide, validate)
         if selected not in valid:
             self._append_attempt(RouteAttempt(
                 request_id, attempt_number, request_hash, definition_hash,
