@@ -1,17 +1,9 @@
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+from genlayer import *
 import hashlib
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
-
-try:
-    import genlayer as gl
-except ModuleNotFoundError:  # permits pure helper tests before SDK installation
-    class _Decorator:
-        def __call__(self, fn): return fn
-    class _Fallback:
-        Contract = object
-        public = type("Public", (), {"write": _Decorator(), "view": _Decorator()})()
-    gl = _Fallback()
+from typing import List, Optional, Tuple
 
 
 MAX_TEXT = 512
@@ -28,6 +20,7 @@ STATUS_REJECTED = "REJECTED"
 STATUS_RETRYABLE = "RETRYABLE"
 
 
+@allow_storage
 @dataclass
 class Capability:
     key: str
@@ -40,6 +33,7 @@ class Capability:
     revision: int = 1
 
 
+@allow_storage
 @dataclass
 class Manifest:
     key: str
@@ -53,6 +47,7 @@ class Manifest:
     revision: int
 
 
+@allow_storage
 @dataclass
 class RouteAttempt:
     request_id: str
@@ -64,6 +59,7 @@ class RouteAttempt:
     reason: str
 
 
+@allow_storage
 @dataclass
 class RouteReceipt:
     request_id: str
@@ -76,6 +72,7 @@ class RouteReceipt:
     created_by: str
 
 
+@allow_storage
 @dataclass
 class CapabilityStats:
     routed: int
@@ -84,6 +81,7 @@ class CapabilityStats:
     active: bool
 
 
+@allow_storage
 @dataclass
 class Policy:
     name: str
@@ -92,6 +90,7 @@ class Policy:
     active: bool
 
 
+@allow_storage
 @dataclass
 class Route:
     request_hash: str
@@ -106,15 +105,15 @@ class Route:
 class Waymark(gl.Contract):
     """Semantic capability routing with deterministic state transitions."""
 
-    capabilities: Dict[str, Capability]
-    manifests: Dict[str, Manifest]
-    policies: Dict[str, Policy]
-    routes: Dict[str, Route]
-    attempts: Dict[str, List[RouteAttempt]]
-    stats: Dict[str, CapabilityStats]
-    history: List[str]
-    route_count: int
-    policy_count: int
+    capabilities: TreeMap[str, Capability]
+    manifests: TreeMap[str, Manifest]
+    policies: TreeMap[str, Policy]
+    routes: TreeMap[str, Route]
+    attempts: TreeMap[str, DynArray[RouteAttempt]]
+    stats: TreeMap[str, CapabilityStats]
+    history: DynArray[str]
+    route_count: u256
+    policy_count: u256
 
     def __init__(self):
         self.capabilities = {}

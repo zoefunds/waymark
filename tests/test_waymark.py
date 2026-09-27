@@ -2,6 +2,7 @@ import hashlib
 import json
 import pytest
 
+pytest.importorskip("genlayer")
 from contracts.waymark import Waymark, Capability
 
 
@@ -20,4 +21,3 @@ def test_definition_hash_pins_semantics():
 def test_bounds_reject_untrusted_text():
     with pytest.raises(ValueError):
         Waymark._check_text("x" * 513)
-
