@@ -10,9 +10,11 @@ Status: deployed and exercised on stable Studionet. The audited canonical deploy
 
 ```bash
 python3 -m pytest
-genvm-linter contracts/waymark.py
+.venv-linter/bin/genvm-lint check contracts/waymark.py
 python3 scripts/check_studionet.py
 ```
+
+The official linter is pinned in `requirements-dev.txt`. Install it with `python3 -m venv .venv-linter && .venv-linter/bin/python -m pip install -r requirements-dev.txt`.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/CONSENSUS.md](docs/CONSENSUS.md), and [docs/INTEGRATION.md](docs/INTEGRATION.md).
 

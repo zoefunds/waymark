@@ -119,35 +119,29 @@ class Waymark(gl.Contract):
         self.route_count = u256(0)
         self.policy_count = u256(0)
 
-    @staticmethod
-    def _check_text(value: str) -> None:
+    def _check_text(self, value: str) -> None:
         if not isinstance(value, str) or not value or len(value) > MAX_TEXT:
-            raise ValueError("text bound")
+            raise gl.vm.UserError("text bound")
 
-    @staticmethod
-    def _check_key(value: str) -> None:
-        Waymark._check_text(value)
+    def _check_key(self, value: str) -> None:
+        self._check_text(value)
         if len(value) > 64 or " " in value or "\n" in value:
-            raise ValueError("invalid key")
+            raise gl.vm.UserError("invalid key")
 
-    @staticmethod
-    def _check_tags(tags: str) -> None:
+    def _check_tags(self, tags: str) -> None:
         if not isinstance(tags, str) or len(tags) > MAX_TAGS * MAX_TAG_LENGTH:
-            raise ValueError("tag bound")
+            raise gl.vm.UserError("tag bound")
         for tag in tags.split(",") if tags else []:
             if not tag or len(tag) > MAX_TAG_LENGTH:
-                raise ValueError("invalid tag")
+                raise gl.vm.UserError("invalid tag")
 
-    @staticmethod
-    def _hash(value: str) -> str:
+    def _hash(self, value: str) -> str:
         return hashlib.sha256(value.encode()).hexdigest()
 
-    @staticmethod
-    def _canonical_tags(tags: str) -> str:
+    def _canonical_tags(self, tags: str) -> str:
         return ",".join(sorted(set(tags.split(",")))) if tags else ""
 
-    @staticmethod
-    def _manifest_hash(key: str, description: str, version: str,
+    def _manifest_hash(self, key: str, description: str, version: str,
                        tags: str, policy: str, owner: str,
                        revision: int) -> str:
         payload = {
@@ -160,16 +154,14 @@ class Waymark(gl.Contract):
             "revision": revision,
         }
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        return Waymark._hash(encoded)
+        return self._hash(encoded)
 
-    @staticmethod
-    def _request_hash(request_id: str, request: str) -> str:
-        return Waymark._hash(request_id + ":" + request)
+    def _request_hash(self, request_id: str, request: str) -> str:
+        return self._hash(request_id + ":" + request)
 
-    @staticmethod
-    def _normalize_status(status: str) -> str:
+    def _normalize_status(self, status: str) -> str:
         if status not in (STATUS_FINAL, STATUS_REJECTED, STATUS_RETRYABLE):
-            raise ValueError("invalid status")
+            raise gl.vm.UserError("invalid status")
         return status
 
     def _record_history(self, request_id: str) -> None:
@@ -186,16 +178,16 @@ class Waymark(gl.Contract):
     def _get_capability(self, key: str) -> Capability:
         self._check_key(key)
         if key not in self.capabilities:
-            raise ValueError("unknown capability")
+            raise gl.vm.UserError("unknown capability")
         return self.capabilities[key]
 
     def _get_policy(self, name: str) -> Policy:
         self._check_key(name)
         if name not in self.policies:
-            raise ValueError("unknown policy")
+            raise gl.vm.UserError("unknown policy")
         policy = self.policies[name]
         if not policy.active:
-            raise ValueError("inactive policy")
+            raise gl.vm.UserError("inactive policy")
         return policy
 
     def _catalog_hash(self, candidates: List[Capability]) -> str:
@@ -212,13 +204,13 @@ class Waymark(gl.Contract):
     def _set_stats(self, key: str, routed: int, rejected: int,
                    request_hash: str, active: bool) -> None:
         if routed < 0 or rejected < 0:
-            raise ValueError("negative stats")
+            raise gl.vm.UserError("negative stats")
         self.stats[key] = CapabilityStats(routed, rejected, request_hash, active)
 
     def _append_attempt(self, attempt: RouteAttempt) -> None:
         existing = self.attempts.get(attempt.request_id, [])
         if len(existing) >= MAX_ATTEMPTS:
-            raise ValueError("attempt limit")
+            raise gl.vm.UserError("attempt limit")
         existing.append(attempt)
         self.attempts[attempt.request_id] = existing
 
@@ -228,8 +220,7 @@ class Waymark(gl.Contract):
             return None
         return entries[-1]
 
-    @staticmethod
-    def _definition_hash(capabilities: List[Capability]) -> str:
+    def _definition_hash(self, capabilities: List[Capability]) -> str:
         payload = [{"key": c.key, "description": c.description, "version": c.version}
                    for c in sorted(capabilities, key=lambda x: x.key)]
         return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -241,9 +232,9 @@ class Waymark(gl.Contract):
         self._check_text(version)
         self._check_key(key)
         if key in self.capabilities:
-            raise ValueError("capability exists")
+            raise gl.vm.UserError("capability exists")
         if len(self.capabilities) >= MAX_CAPABILITIES:
-            raise ValueError("capability limit")
+            raise gl.vm.UserError("capability limit")
         tags = ""
         policy = ""
         owner = ""
@@ -260,7 +251,7 @@ class Waymark(gl.Contract):
     @gl.public.write
     def deactivate(self, key: str) -> None:
         if key not in self.capabilities:
-            raise ValueError("unknown capability")
+            raise gl.vm.UserError("unknown capability")
         item = self.capabilities[key]
         self.capabilities[key] = Capability(
             item.key, item.description, item.version, False,
@@ -281,9 +272,9 @@ class Waymark(gl.Contract):
         item = self._get_capability(key)
         self._check_tags(tags)
         if len(policy) > MAX_POLICY_LENGTH:
-            raise ValueError("policy bound")
+            raise gl.vm.UserError("policy bound")
         if not isinstance(policy, str) or not isinstance(owner, str) or len(owner) > MAX_TEXT:
-            raise ValueError("invalid metadata")
+            raise gl.vm.UserError("invalid metadata")
         revision = item.revision + 1
         canonical_tags = self._canonical_tags(tags)
         definition_hash = self._manifest_hash(
@@ -305,11 +296,11 @@ class Waymark(gl.Contract):
         self._check_key(name)
         self._check_text(text)
         if len(text) > MAX_POLICY_LENGTH:
-            raise ValueError("policy bound")
+            raise gl.vm.UserError("policy bound")
         if name in self.policies:
-            raise ValueError("policy exists")
+            raise gl.vm.UserError("policy exists")
         if self.policy_count >= MAX_CAPABILITIES:
-            raise ValueError("policy limit")
+            raise gl.vm.UserError("policy limit")
         self.policies[name] = Policy(name, text, self._hash(name + text), True)
         self.policy_count += 1
 
@@ -317,7 +308,7 @@ class Waymark(gl.Contract):
     def deactivate_policy(self, name: str) -> None:
         policy = self.policies.get(name)
         if policy is None:
-            raise ValueError("unknown policy")
+            raise gl.vm.UserError("unknown policy")
         self.policies[name] = Policy(policy.name, policy.text, policy.policy_hash, False)
 
     @gl.public.write
@@ -329,12 +320,12 @@ class Waymark(gl.Contract):
 
     def _route_internal(self, request_id: str, request: str, policy_text: str) -> None:
         if request_id in self.routes:
-            raise ValueError("replay")
+            raise gl.vm.UserError("replay")
         candidates = self._active_capabilities()
         if not candidates:
-            raise ValueError("no active capability")
+            raise gl.vm.UserError("no active capability")
         if len(candidates) > MAX_CAPABILITIES:
-            raise ValueError("catalog limit")
+            raise gl.vm.UserError("catalog limit")
         definition_hash = self._catalog_hash(candidates)
         request_hash = self._request_hash(request_id, request)
         attempt_number = len(self.attempts.get(request_id, [])) + 1
@@ -371,10 +362,10 @@ class Waymark(gl.Contract):
                 request_id, attempt_number, request_hash, definition_hash,
                 "", STATUS_RETRYABLE, "no canonical route",
             ))
-            raise ValueError("no canonical route")
+            raise gl.vm.UserError("no canonical route")
         item = self.capabilities[selected]
         if self.route_count >= MAX_RESULTS:
-            raise ValueError("result limit")
+            raise gl.vm.UserError("result limit")
         receipt = Route(
             request_hash, selected, definition_hash, STATUS_FINAL,
             attempt_number, item.owner, "canonical consensus",
@@ -398,7 +389,7 @@ class Waymark(gl.Contract):
     @gl.public.view
     def get_route(self, request_id: str) -> Route:
         if request_id not in self.routes:
-            raise ValueError("unknown route")
+            raise gl.vm.UserError("unknown route")
         return self.routes[request_id]
 
     @gl.public.view
@@ -436,7 +427,7 @@ class Waymark(gl.Contract):
     def get_latest_attempt(self, request_id: str) -> RouteAttempt:
         latest = self._latest_attempt(request_id)
         if latest is None:
-            raise ValueError("unknown request")
+            raise gl.vm.UserError("unknown request")
         return latest
 
     @gl.public.view
@@ -501,7 +492,7 @@ class Waymark(gl.Contract):
     @gl.public.view
     def definitions_for_keys(self, keys: List[str]) -> List[str]:
         if len(keys) > MAX_BATCH:
-            raise ValueError("batch bound")
+            raise gl.vm.UserError("batch bound")
         output = []
         for key in keys:
             output.append(self._get_capability(key).key)
@@ -510,7 +501,7 @@ class Waymark(gl.Contract):
     @gl.public.view
     def batch_verify(self, request_ids: List[str], definition_hash: str) -> List[bool]:
         if len(request_ids) > MAX_BATCH:
-            raise ValueError("batch bound")
+            raise gl.vm.UserError("batch bound")
         self._check_text(definition_hash)
         result = []
         for request_id in request_ids:
@@ -535,38 +526,38 @@ class Waymark(gl.Contract):
 
     def _assert_invariants(self) -> None:
         if len(self.capabilities) > MAX_CAPABILITIES:
-            raise ValueError("capability invariant")
+            raise gl.vm.UserError("capability invariant")
         if self.route_count != len(self.routes):
-            raise ValueError("route counter invariant")
+            raise gl.vm.UserError("route counter invariant")
         if self.route_count > MAX_RESULTS:
-            raise ValueError("route invariant")
+            raise gl.vm.UserError("route invariant")
         if len(self.history) > MAX_HISTORY:
-            raise ValueError("history invariant")
+            raise gl.vm.UserError("history invariant")
         for key, item in self.capabilities.items():
             if key != item.key:
-                raise ValueError("capability key invariant")
+                raise gl.vm.UserError("capability key invariant")
             if key not in self.manifests:
-                raise ValueError("manifest invariant")
+                raise gl.vm.UserError("manifest invariant")
             if key not in self.stats:
-                raise ValueError("stats invariant")
+                raise gl.vm.UserError("stats invariant")
 
     def _assert_route_final(self, request_id: str) -> Route:
         route = self.get_route(request_id)
         if route.status != STATUS_FINAL:
-            raise ValueError("route not final")
+            raise gl.vm.UserError("route not final")
         return route
 
     def _assert_definition(self, request_id: str, definition_hash: str) -> Route:
         route = self._assert_route_final(request_id)
         if route.definition_hash != definition_hash:
-            raise ValueError("definition mismatch")
+            raise gl.vm.UserError("definition mismatch")
         return route
 
     def _safe_route_key(self, request_id: str) -> str:
         route = self._assert_route_final(request_id)
         item = self._get_capability(route.capability_key)
         if not item.active:
-            raise ValueError("capability inactive")
+            raise gl.vm.UserError("capability inactive")
         return item.key
 
     def _record_rejection(self, key: str, request_hash: str) -> None:
@@ -575,15 +566,15 @@ class Waymark(gl.Contract):
 
     def _check_route_capacity(self) -> None:
         if len(self.routes) >= MAX_RESULTS:
-            raise ValueError("route capacity")
+            raise gl.vm.UserError("route capacity")
 
     def _check_capability_capacity(self) -> None:
         if len(self.capabilities) >= MAX_CAPABILITIES:
-            raise ValueError("capability capacity")
+            raise gl.vm.UserError("capability capacity")
 
     def _check_attempt_capacity(self, request_id: str) -> None:
         if len(self.attempts.get(request_id, [])) >= MAX_ATTEMPTS:
-            raise ValueError("attempt capacity")
+            raise gl.vm.UserError("attempt capacity")
 
     def _copy_capability(self, item: Capability) -> Capability:
         return Capability(
@@ -645,7 +636,7 @@ class Waymark(gl.Contract):
             return STATUS_FINAL
         latest = self._latest_attempt(request_id)
         if latest is None:
-            raise ValueError("unknown request")
+            raise gl.vm.UserError("unknown request")
         return latest.status
 
     def _route_attempt_count(self, request_id: str) -> int:
@@ -664,9 +655,9 @@ class Waymark(gl.Contract):
 
     def _require_nonempty_keys(self, keys: List[str]) -> None:
         if not keys:
-            raise ValueError("empty key set")
+            raise gl.vm.UserError("empty key set")
         if len(keys) > MAX_BATCH:
-            raise ValueError("key set bound")
+            raise gl.vm.UserError("key set bound")
         for key in keys:
             self._check_key(key)
 
@@ -682,9 +673,9 @@ class Waymark(gl.Contract):
     def _safe_catalog(self) -> List[Capability]:
         catalog = self._active_capabilities()
         if not catalog:
-            raise ValueError("empty catalog")
+            raise gl.vm.UserError("empty catalog")
         if not self._all_manifests_consistent([item.key for item in catalog]):
-            raise ValueError("inconsistent catalog")
+            raise gl.vm.UserError("inconsistent catalog")
         return catalog
 
     def _route_input_hash(self, request_id: str, request: str, policy: str) -> str:
@@ -736,7 +727,7 @@ class Waymark(gl.Contract):
 
     def _consumer_guard(self, request_id: str, definition_hash: str, key: str) -> str:
         if not self.verify_route(request_id, definition_hash, key):
-            raise ValueError("consumer guard failed")
+            raise gl.vm.UserError("consumer guard failed")
         return key
 
     def _consumer_guard_active(self, request_id: str, definition_hash: str) -> str:
