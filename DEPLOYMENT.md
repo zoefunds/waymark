@@ -14,7 +14,7 @@ Network preflight was run immediately before deployment:
 - Address: `0xF3af2D9BFF8eb9Dc93A4617f046345D5CfbfFB2b`
 - Deployment transaction: [0xe9a418c25338a8bcb988840c58221a7f62119b7d2ec6cf9cd023254031897465](https://explorer-studio.genlayer.com/tx/0xe9a418c25338a8bcb988840c58221a7f62119b7d2ec6cf9cd023254031897465)
 - Finalized: yes
-- Final definition hash after registration: `ccd4f1ee37c1eefe298425ba64a9c5936daf0158ed35be8cc765c7b5722bf9c4`
+- Definition hash read from the latest route record: `e4f6938d0377a3f816efc1dcf0ea7a1dadb768c9d3a9e0d6de2ce042eb215486`
 
 ## Finalized lifecycle
 
@@ -33,3 +33,9 @@ The audit redeployment was followed by a fresh registration transaction [0x5b890
 ## Linter proof
 
 `genvm-lint check contracts/waymark.py` passed AST lint, SDK validation, and schema extraction. The project pins `genvm-linter==0.11.0` in `requirements-dev.txt`.
+
+## Latest live test
+
+The latest lint-clean deployment was tested with a new registration [0x400b10f646736f2a1ba74cf6e032fd2809022c53ed5369cadb31a1f067e62d6c](https://explorer-studio.genlayer.com/tx/0x400b10f646736f2a1ba74cf6e032fd2809022c53ed5369cadb31a1f067e62d6c) and a bounded, detailed Lagos cold-chain route [0x80a96b4828501055716483c453589ce3379ad985734eda49a4006db2d59b84ba](https://explorer-studio.genlayer.com/tx/0x80a96b4828501055716483c453589ce3379ad985734eda49a4006db2d59b84ba). Both finalized; `count_routes` read back as `1`, and `get_route("climate-risk-lagos-cold-chain")` returned status `FINAL`, capability `climate_risk`, and reason `canonical consensus`.
+
+An intentionally overlong route prompt was also tested and correctly rolled back with `text bound`, proving the input guard is active. The accepted prompt stayed within the contract's 512-character bound.
