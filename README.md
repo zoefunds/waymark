@@ -4,7 +4,7 @@ Waymark is a reusable semantic capability-routing primitive. A caller submits an
 
 Ordinary contracts can compare identifiers, but cannot safely decide whether an open-ended request matches a capability description. Waymark makes that semantic boundary consensus-backed while keeping registration, authorization, replay protection, limits, counters, and state transitions deterministic.
 
-Status: deployed and exercised on stable Studionet. The canonical deployment is `0x83cC3AB177CEFf2974fD4BFD9393693756bb7344`.
+Status: deployed and exercised on stable Studionet. The audited canonical deployment is `0xFDe49237D70bA9F69594A395902FAE30F870Ae47`.
 
 ## Quick start
 
@@ -18,4 +18,4 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/CONSENSUS.md](docs/CONSE
 
 ## Live proof
 
-The final source is commit `3d3f14f`. Deployment transaction: [0x0d5c4a554830169e836b09823c8722afc32f847b7c6cfcd26614f7a0cd9d8bfd](https://explorer-studio.genlayer.com/tx/0x0d5c4a554830169e836b09823c8722afc32f847b7c6cfcd26614f7a0cd9d8bfd). Two real semantic routes finalized with status `FINAL`; see [DEPLOYMENT.md](DEPLOYMENT.md) for every transaction and resulting state.
+The audited final source is commit `2ee53bd`. Deployment transaction: [0xaeaa64f2e6f7528fb62a043db0fc4ea89228dc2651d293d98b3db6f047cc7a7f](https://explorer-studio.genlayer.com/tx/0xaeaa64f2e6f7528fb62a043db0fc4ea89228dc2651d293d98b3db6f047cc7a7f). A fresh semantic route finalized with status `FINAL`; see [DEPLOYMENT.md](DEPLOYMENT.md) for audit evidence.

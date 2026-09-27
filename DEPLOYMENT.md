@@ -7,12 +7,12 @@ Network preflight was run immediately before deployment:
 - RPC: `https://studio.genlayer.com/api`
 - Explorer: `https://explorer-studio.genlayer.com`
 - Runtime header: `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`
-- Source commit: `3d3f14f`
+- Source commit: `2ee53bd`
 
 ## Contract
 
-- Address: `0x83cC3AB177CEFf2974fD4BFD9393693756bb7344`
-- Deployment transaction: [0x0d5c4a554830169e836b09823c8722afc32f847b7c6cfcd26614f7a0cd9d8bfd](https://explorer-studio.genlayer.com/tx/0x0d5c4a554830169e836b09823c8722afc32f847b7c6cfcd26614f7a0cd9d8bfd)
+- Address: `0xFDe49237D70bA9F69594A395902FAE30F870Ae47`
+- Deployment transaction: [0xaeaa64f2e6f7528fb62a043db0fc4ea89228dc2651d293d98b3db6f047cc7a7f](https://explorer-studio.genlayer.com/tx/0xaeaa64f2e6f7528fb62a043db0fc4ea89228dc2651d293d98b3db6f047cc7a7f)
 - Finalized: yes
 - Final definition hash after registration: `ccd4f1ee37c1eefe298425ba64a9c5936daf0158ed35be8cc765c7b5722bf9c4`
 
@@ -28,4 +28,4 @@ The non-admin writes were executed with real domain data. `configure`, `activate
 | `route` | Lagos food distributor climate-risk request | [0xf5aa6725d5a1df7f7c4fcc6ade4c9bb69957721098320340630d6d485964f4da](https://explorer-studio.genlayer.com/tx/0xf5aa6725d5a1df7f7c4fcc6ade4c9bb69957721098320340630d6d485964f4da) |
 | `route_with_policy` | Nigerian manufacturer Scope 1/2 assurance request | [0x07cca860ef345bde1c857a03e7d6a8f90fa3bcb6b82f7c8b973e35fc665ceb24](https://explorer-studio.genlayer.com/tx/0x07cca860ef345bde1c857a03e7d6a8f90fa3bcb6b82f7c8b973e35fc665ceb24) |
 
-All five lifecycle writes reached `FINALIZED` with majority validator agreement. Final reads returned `count_routes = 2`; both route records had `status = FINAL`, with `climate_risk` and `carbon_accounting` selected respectively.
+The audit redeployment was followed by a fresh registration transaction [0x5b890ee6e4c4a3953d32ac7b19ee5eb0036e4c4da8fd5329567937ec22306491](https://explorer-studio.genlayer.com/tx/0x5b890ee6e4c4da8fd5329567937ec22306491) and a fresh semantic route transaction [0xf5bebbe4e01145bf088f15b4a0452967a96d4ec29f85785d367250d9ae17de0a](https://explorer-studio.genlayer.com/tx/0xf5bebbe4e01145bf088f15b4a0452967a96d4ec29f85785d367250d9ae17de0a). Both finalized with majority validator agreement.
