@@ -7,12 +7,12 @@ Network preflight was run immediately before deployment:
 - RPC: `https://studio.genlayer.com/api`
 - Explorer: `https://explorer-studio.genlayer.com`
 - Runtime header: `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`
-- Source commit: `2ee53bd`
+- Source commit: `035e8bd`
 
 ## Contract
 
-- Address: `0xFDe49237D70bA9F69594A395902FAE30F870Ae47`
-- Deployment transaction: [0xaeaa64f2e6f7528fb62a043db0fc4ea89228dc2651d293d98b3db6f047cc7a7f](https://explorer-studio.genlayer.com/tx/0xaeaa64f2e6f7528fb62a043db0fc4ea89228dc2651d293d98b3db6f047cc7a7f)
+- Address: `0xF3af2D9BFF8eb9Dc93A4617f046345D5CfbfFB2b`
+- Deployment transaction: [0xe9a418c25338a8bcb988840c58221a7f62119b7d2ec6cf9cd023254031897465](https://explorer-studio.genlayer.com/tx/0xe9a418c25338a8bcb988840c58221a7f62119b7d2ec6cf9cd023254031897465)
 - Finalized: yes
 - Final definition hash after registration: `ccd4f1ee37c1eefe298425ba64a9c5936daf0158ed35be8cc765c7b5722bf9c4`
 
@@ -29,3 +29,7 @@ The non-admin writes were executed with real domain data. `configure`, `activate
 | `route_with_policy` | Nigerian manufacturer Scope 1/2 assurance request | [0x07cca860ef345bde1c857a03e7d6a8f90fa3bcb6b82f7c8b973e35fc665ceb24](https://explorer-studio.genlayer.com/tx/0x07cca860ef345bde1c857a03e7d6a8f90fa3bcb6b82f7c8b973e35fc665ceb24) |
 
 The audit redeployment was followed by a fresh registration transaction [0x5b890ee6e4c4a3953d32ac7b19ee5eb0036e4c4da8fd5329567937ec22306491](https://explorer-studio.genlayer.com/tx/0x5b890ee6e4c4da8fd5329567937ec22306491) and a fresh semantic route transaction [0xf5bebbe4e01145bf088f15b4a0452967a96d4ec29f85785d367250d9ae17de0a](https://explorer-studio.genlayer.com/tx/0xf5bebbe4e01145bf088f15b4a0452967a96d4ec29f85785d367250d9ae17de0a). Both finalized with majority validator agreement.
+
+## Linter proof
+
+`genvm-lint check contracts/waymark.py` passed AST lint, SDK validation, and schema extraction. The project pins `genvm-linter==0.11.0` in `requirements-dev.txt`.
