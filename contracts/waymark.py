@@ -355,7 +355,7 @@ class Waymark(gl.Contract):
                 "POLICY:\n" + policy_text + "\nREQUEST:\n" + request
                 + "\nCATALOG:\n" + catalog
             )
-            return gl.exec_prompt(prompt).strip()
+            return gl.nondet.exec_prompt(prompt).strip()
 
         selected = gl.eq_principle.strict_eq(decide)
         valid = {c.key for c in candidates}
