@@ -118,8 +118,6 @@ class Waymark(gl.Contract):
     def __init__(self):
         self.route_count = u256(0)
         self.policy_count = u256(0)
-        self.route_count = 0
-        self.policy_count = 0
 
     @staticmethod
     def _check_text(value: str) -> None:
