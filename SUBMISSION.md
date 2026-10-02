@@ -6,4 +6,4 @@ The mechanism is reusable by agent registries, workflow contracts, and autonomou
 
 Research found substantial collision in fact-checking, prediction, dispute, escrow, and evidence-verification projects. Waymark is intentionally narrower and materially different: it selects among registered capabilities and exposes a composable finalized route, not a claim verdict or dispute outcome.
 
-Final lint-clean deployment is `0xF3af2D9BFF8eb9Dc93A4617f046345D5CfbfFB2b` on stable Studionet (chain ID 61999). The source commit deployed was `035e8bd`. The official GenVM linter passes lint, SDK validation, and schema extraction. Exact deployment and prior live route evidence is in `DEPLOYMENT.md`.
+The finalized Studionet deployment is `0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335` (chain ID 61999), deployed in transaction `0xfba60164eceac7d90409d87cfa1ffc9b9d2e3df8c0b156de1fa523c0230f4bfb`. It provides authenticated ownership, complete routing commitments, durable retryable no-match records, and a readable inactive-policy view. Exact finalized E2E evidence is in `DEPLOYMENT.md`.

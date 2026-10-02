@@ -1,41 +1,71 @@
-# Deployment and live proof
+# Current audited deployment and live proof
 
-Network preflight was run immediately before deployment:
+## Deployment
 
-- Network alias: `studionet`
-- Chain ID: `61999`
-- RPC: `https://studio.genlayer.com/api`
-- Explorer: `https://explorer-studio.genlayer.com`
-- Runtime header: `py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6`
-- Source commit: `035e8bd`
+- Network: Studionet (chain ID 61999)
+- Contract: [0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335](https://explorer-studio.genlayer.com/address/0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335)
+- Deployment transaction: [0xfba60164eceac7d90409d87cfa1ffc9b9d2e3df8c0b156de1fa523c0230f4bfb](https://explorer-studio.genlayer.com/tx/0xfba60164eceac7d90409d87cfa1ffc9b9d2e3df8c0b156de1fa523c0230f4bfb)
+- Deployment state: finalized, majority agreement
+- Authenticated deployer and catalog owner: 0x82dcdc5b028a13f3475ddec31b5300acfe9815d1
 
-## Contract
+The deployed source was read back from Studionet and matches
+[contracts/waymark.py](contracts/waymark.py) exactly after removal of the
+CLI response wrapper. Normalized SHA-256:
+c4be668ca7918fd9064f539fb20881afd8bb8138833f51a00362ff9a6ba1ef7b.
 
-- Address: `0xF3af2D9BFF8eb9Dc93A4617f046345D5CfbfFB2b`
-- Deployment transaction: [0xe9a418c25338a8bcb988840c58221a7f62119b7d2ec6cf9cd023254031897465](https://explorer-studio.genlayer.com/tx/0xe9a418c25338a8bcb988840c58221a7f62119b7d2ec6cf9cd023254031897465)
-- Finalized: yes
-- Definition hash read from the latest route record: `e4f6938d0377a3f816efc1dcf0ea7a1dadb768c9d3a9e0d6de2ce042eb215486`
+## Owner-bound catalog configuration
 
-## Finalized lifecycle
+The same on-chain owner registered and configured two active capabilities.
+Each manifest stores its owner, canonical tags, capability policy, revision,
+and manifest hash:
 
-The non-admin writes were executed with real domain data. `configure`, `activate`, `deactivate`, and `deactivate_policy` were intentionally excluded as administrative mutations.
-
-| Method | Purpose | Finalized transaction |
+| Capability | Registration | Configuration |
 |---|---|---|
-| `register` | Climate-risk capability for flood, transition, and lender-review analysis | [0xcd295df15c1feae08fe2ba6c9f10d7f3b6a0e798bc496a092aab5efe986f4b69](https://explorer-studio.genlayer.com/tx/0xcd295df15c1feae08fe2ba6c9f10d7f3b6a0e798bc496a092aab5efe986f4b69) |
-| `register` | Carbon-accounting capability for Scope 1/2 and reporting boundaries | [0x21d133e04caad0ffe9c575f0f17ebddf9542f79f9e569742a41f0666c6b1d288](https://explorer-studio.genlayer.com/tx/0x21d133e04caad0ffe9c575f0f17ebddf9542f79f9e569742a41f0666c6b1d288) |
-| `register_policy` | Evidence-first routing policy | [0x234ab653d807efc5907928078e220318b15726386f29d635a96ff08615443160](https://explorer-studio.genlayer.com/tx/0x234ab653d807efc5907928078e220318b15726386f29d635a96ff08615443160) |
-| `route` | Lagos food distributor climate-risk request | [0xf5aa6725d5a1df7f7c4fcc6ade4c9bb69957721098320340630d6d485964f4da](https://explorer-studio.genlayer.com/tx/0xf5aa6725d5a1df7f7c4fcc6ade4c9bb69957721098320340630d6d485964f4da) |
-| `route_with_policy` | Nigerian manufacturer Scope 1/2 assurance request | [0x07cca860ef345bde1c857a03e7d6a8f90fa3bcb6b82f7c8b973e35fc665ceb24](https://explorer-studio.genlayer.com/tx/0x07cca860ef345bde1c857a03e7d6a8f90fa3bcb6b82f7c8b973e35fc665ceb24) |
+| food_cold_chain | [0x344d1713fa0944ccb2d86a7c51e71181285cc5a9b4ebaa28c2f50658598b5565](https://explorer-studio.genlayer.com/tx/0x344d1713fa0944ccb2d86a7c51e71181285cc5a9b4ebaa28c2f50658598b5565) | owner-configured; verified by final manifest readback |
+| carbon_assurance | [0xc4887dde72cce9f7a1b36efec33117a6b84ba8f6223cc33f51a7b4d8f79edcff](https://explorer-studio.genlayer.com/tx/0xc4887dde72cce9f7a1b36efec33117a6b84ba8f6223cc33f51a7b4d8f79edcff) | [0x29eb8f893a797e1f5179489b48780843b43b501a9688d1436b1ab2246341f98b](https://explorer-studio.genlayer.com/tx/0x29eb8f893a797e1f5179489b48780843b43b501a9688d1436b1ab2246341f98b) |
 
-The audit redeployment was followed by a fresh registration transaction [0x5b890ee6e4c4a3953d32ac7b19ee5eb0036e4c4da8fd5329567937ec22306491](https://explorer-studio.genlayer.com/tx/0x5b890ee6e4c4da8fd5329567937ec22306491) and a fresh semantic route transaction [0xf5bebbe4e01145bf088f15b4a0452967a96d4ec29f85785d367250d9ae17de0a](https://explorer-studio.genlayer.com/tx/0xf5bebbe4e01145bf088f15b4a0452967a96d4ec29f85785d367250d9ae17de0a). Both finalized with majority validator agreement.
+The deployed ABI confirms configure(key, tags, policy) has no owner parameter.
+register, register_policy, configure, deactivate, and deactivate_policy derive
+or enforce ownership from gl.message.sender_address.
 
-## Linter proof
+On the final deployment, owner policy lifecycle was also finalized: policy
+`evidence_router_final` was created in [0x47c7f6fd8f2ab5455ce7c32571f2fafcaecf8d9173fe54830de9462e7aae7a1d](https://explorer-studio.genlayer.com/tx/0x47c7f6fd8f2ab5455ce7c32571f2fafcaecf8d9173fe54830de9462e7aae7a1d), deactivated in [0xc380dd221a7020c318c8b922c2a54af973e71b4d50b4b272decfb2092ecba197](https://explorer-studio.genlayer.com/tx/0xc380dd221a7020c318c8b922c2a54af973e71b4d50b4b272decfb2092ecba197), and `policy_is_active` returned `false`.
 
-`genvm-lint check contracts/waymark.py` passed AST lint, SDK validation, and schema extraction. The project pins `genvm-linter==0.11.0` in `requirements-dev.txt`.
+The final-deployment unauthorized configuration attempt from
+`0x8D4E752AE688C21eC7C7D4d8a232B5e0700DBf0f` finalized with `rollback: owner only`:
+[0x3b1bde6ba577c3fe97d229ff26ccbcba52a0c74a73f89ff81ad566d5483404ee](https://explorer-studio.genlayer.com/tx/0x3b1bde6ba577c3fe97d229ff26ccbcba52a0c74a73f89ff81ad566d5483404ee).
 
-## Latest live test
+## Finalized semantic routes
 
-The latest lint-clean deployment was tested with a new registration [0x400b10f646736f2a1ba74cf6e032fd2809022c53ed5369cadb31a1f067e62d6c](https://explorer-studio.genlayer.com/tx/0x400b10f646736f2a1ba74cf6e032fd2809022c53ed5369cadb31a1f067e62d6c) and a bounded, detailed Lagos cold-chain route [0x80a96b4828501055716483c453589ce3379ad985734eda49a4006db2d59b84ba](https://explorer-studio.genlayer.com/tx/0x80a96b4828501055716483c453589ce3379ad985734eda49a4006db2d59b84ba). Both finalized; `count_routes` read back as `1`, and `get_route("climate-risk-lagos-cold-chain")` returned status `FINAL`, capability `climate_risk`, and reason `canonical consensus`.
+| Test | Finalized transaction | Persisted result |
+|---|---|---|
+| Detailed cold-chain resilience planning: temperature logs, generator contingency, reefer dispatch, spoilage containment, evidence checklist | [0x9b1c90f910cbf097a4e367b4ba3e08afbb3a3658ca43e01c51868563d267ebec](https://explorer-studio.genlayer.com/tx/0x9b1c90f910cbf097a4e367b4ba3e08afbb3a3658ca43e01c51868563d267ebec) | food_cold_chain, FINAL |
+| Detailed carbon-assurance training: Scope 1, Scope 2, leased refrigeration boundary, evidence reconciliation, audit workpapers | [0xf9226a1707513deb5f7e9b37319da54bbdc9678c729c3579e19025a112de987d](https://explorer-studio.genlayer.com/tx/0xf9226a1707513deb5f7e9b37319da54bbdc9678c729c3579e19025a112de987d) | carbon_assurance, FINAL |
 
-An intentionally overlong route prompt was also tested and correctly rolled back with `text bound`, proving the input guard is active. The accepted prompt stayed within the contract's 512-character bound.
+Both live receipts commit:
+
+- catalog hash: 0500b5f7bace9e85bfb11b9a12bef20bccd8b337139e41a8f4a1ac9179e82566
+- global policy name: __waymark_default_v1__
+- global policy hash: 8dfed6e69284aec732f8cd6e8d827f4db398e393fad1bed455e69512055ba41b
+
+The receipt also contains the request hash, selected capability, capability
+version, selected manifest hash, creator, attempt, status, and reason.
+
+## Finalized durable no-match
+
+The unrelated public water-treatment maintenance training scenario finalized
+with consensus result NONE:
+[0xa0ae439c3e688137602d5557cf5df1bd12dcfc53d5be84c09850f4a754e88f6a](https://explorer-studio.genlayer.com/tx/0xa0ae439c3e688137602d5557cf5df1bd12dcfc53d5be84c09850f4a754e88f6a).
+
+route_receipt("e2e_no_match_final_20261002") returns RETRYABLE, no
+capability key, reason "no matching capability", and durable request/catalog/
+global-policy commitments. count_routes() remains 2, demonstrating that the
+attempt committed without reverting or being counted as a final route.
+
+## Verification commands
+
+    python3 -m pytest -q
+    genlayer code 0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335
+    genlayer schema 0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335
+    genlayer call 0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335 route_receipt --args e2e_coldchain_final_20261002
+    genlayer call 0x8a75685ae363d46fd0f259FEbfe9Ba86112EC335 route_receipt --args e2e_no_match_final_20261002
